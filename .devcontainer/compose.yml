@@ -1,0 +1,53 @@
+name: bankimport-dev
+
+services:
+  workspace:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/bankimport
+
+  mariadb:
+    image: mariadb:11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: dolibarr
+      MARIADB_USER: dolibarr
+      MARIADB_PASSWORD: dolibarr
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  dolibarr:
+    image: dolibarr/dolibarr:24.0.0-php8.2
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8088:80"
+    environment:
+      DOLI_INSTALL_AUTO: "1"
+      DOLI_INIT_DEMO: "0"
+      DOLI_PROD: "0"
+      DOLI_DB_HOST: mariadb
+      DOLI_DB_NAME: dolibarr
+      DOLI_DB_USER: dolibarr
+      DOLI_DB_PASSWORD: dolibarr
+      DOLI_ADMIN_LOGIN: admin
+      DOLI_ADMIN_PASSWORD: admin
+      DOLI_URL_ROOT: http://localhost:8088
+      DOLI_INSTANCE_UNIQUE_ID: bankimport-local-development-only
+      PHP_INI_DATE_TIMEZONE: Europe/Berlin
+    volumes:
+      - ..:/var/www/html/custom/bankimport:ro
+      - dolibarr-documents:/var/www/documents
+
+volumes:
+  mariadb-data:
+  dolibarr-documents:

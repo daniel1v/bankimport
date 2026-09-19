@@ -15,12 +15,10 @@ class modBankImport extends DolibarrModules
         global $langs, $conf;
         $this->db = $db;
 
-        $this->version = BankImportHelper::getEnv('VERSION', '0.0.10');
+        $this->version = BankImportHelper::getEnv('VERSION', '0.1.0');
 
         // Unique ID (custom modules > 100000)
         $this->numero = 104001;
-
-        $this->rights_class = 'bankimport';
 
         // Where the module shows up in Setup
         $this->family = "financial";
@@ -38,19 +36,11 @@ class modBankImport extends DolibarrModules
         $this->dirs = array();
         //$this->config_page_url = array('setup.php@bankimport');
         $this->config_page_url = array();
-        $this->depends = array();
+        $this->depends = array('modBanque');
         $this->requiredby = array();
         $this->phpmin = array(7, 4);
+        $this->dolibarrmin = array(24, 0);
         $this->langfiles = array("bankimport@bankimport");
-
-        // --- Permissions definition ---
-        $r = 0;
-        $this->rights[$r][0] = $this->numero + $r;
-        $this->rights[$r][1] = 'Bankauszüge importieren';
-        $this->rights[$r][2] = 'w';
-        $this->rights[$r][3] = 0;
-        $this->rights[$r][4] = 'modifier';
-        $r++;
 
         // --- Menu definition ---
         $r = 0;

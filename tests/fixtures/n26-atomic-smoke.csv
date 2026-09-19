@@ -1,0 +1,2 @@
+Booking Date,Value Date,Partner Name,Partner Iban,Type,Payment Reference,Category,Account Name,Amount (EUR),Original Amount,Original Currency,Exchange Rate
+2026-09-06,2026-09-06,Integration Test Partner,DE33333333333333333333,TRANSFER,BANKIMPORT-INTEGRATION-ATOMIC-7F91C2,Tests,Main Account,-12.34,,,

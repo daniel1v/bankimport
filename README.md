@@ -2,25 +2,29 @@
 
 **Author**: Tilo Thiele <tilo.thiele@hamburg.de>
 **License**: MIT (see License.txt)
-**Github**: https://github.com/tilothiele/bankimport
+The upstream repository also contains GPL-3.0-or-later notices in `import.php` and `core/class/BankImport.class.php`. Those notices are preserved; this fork does not resolve the upstream licensing inconsistency.
+**Github**: https://github.com/daniel1v/bankimport
 
 ## Description
 
-Das BankImport-Modul ermöglicht den Import von Bankauszügen im CSV-Format (camt.052 v8) in Dolibarr. Das Modul unterstützt verschiedene Kodierungen und verhindert Duplikate durch Import-Schlüssel.
+Das BankImport-Modul importiert Haspa/camt.052-v8- und N26-Kontoaktivitätsberichte im CSV-Format nach Dolibarr. Das Format wird anhand der Kopfzeile automatisch erkannt. Vor dem Import zeigt eine Vorschau jede Buchung sowie kontoabhängige Duplikat- und Ähnlichkeitshinweise; der Benutzer entscheidet selbst, welche Zeilen importiert werden.
 
 ### Features
 
-- ✅ Import von CSV-Dateien (camt.052 v8 Format)
+- ✅ Import von Haspa/camt.052 v8 und aktuellen englischen N26-CSV-Dateien
+- ✅ Automatische Format- und Separatorerkennung (`,` oder `;`)
 - ✅ Unterstützung für UTF-8 und ISO-8859-1 Kodierung
-- ✅ Automatische Erkennung und Vermeidung von Duplikaten
+- ✅ Auswahl einzelner Buchungen in einer Importvorschau
+- ✅ Kontoabhängige Hinweise auf exakte Duplikate und ähnliche Buchungen
+- ✅ Atomarer Import von Bankzeile und Import-Schlüssel
 - ✅ Validierung der CSV-Daten vor dem Import
-- ✅ Mehrsprachige Unterstützung (Deutsch/Englisch/Französisch)
+- ✅ Mehrsprachige Unterstützung (Deutsch/Englisch)
 - ✅ Berechtigungen an das Bank-Modul gekoppelt
 
 ### System Requirements
 
 - **PHP**: 7.4 oder höher
-- **Dolibarr**: 21.0.0 oder höher
+- **Dolibarr**: 24.x
 - **Aktiviertes Bank-Modul** in Dolibarr
 
 ## Installation
@@ -32,35 +36,71 @@ Siehe [INSTALL.md](INSTALL.md) für detaillierte Installationsanweisungen.
 1. Kopieren Sie das Modul in `/path/to/dolibarr/htdocs/custom/bankimport/`
 2. Aktivieren Sie das Modul in Dolibarr (Setup → Module/Applications)
 3. Konfigurieren Sie die Berechtigungen
-4. Gehen Sie zu **Bank** → **Kontoauszüge importieren**
+4. Gehen Sie zu **Bank** → **Kontoauszüge importieren**, erstellen Sie eine Vorschau und markieren Sie die gewünschten Buchungen.
+
+### Lokale Entwicklung (Dolibarr 24)
+
+Für die Integrationstests steht eine VS-Code-Devcontainer-Umgebung bereit. Sie startet Dolibarr 24 mit PHP 8.2 und MariaDB; das aktuelle Repository wird direkt als `custom/bankimport` eingebunden.
+
+1. Öffnen Sie das Repository in VS Code und wählen Sie **Dev Containers: Reopen in Container**.
+2. Dolibarr ist anschließend unter `http://127.0.0.1:8088` verfügbar (bei einer neuen lokalen Datenbank: `admin` / `admin`).
+3. Im Devcontainer können Sie die CSV-Regressionsprüfung mit `php tests/BankImportCsvTest.php` ausführen.
+
+VS Code stoppt den Stack beim Schließen des Devcontainers (`shutdownAction: stopCompose`). Während einer Entwicklungssitzung kann er mit `docker compose -f .devcontainer/compose.yml up -d` gestartet und mit `docker compose -f .devcontainer/compose.yml stop` wieder gestoppt werden; es gibt keine automatische Neustartregel. Datenbank und Dokumente bleiben in Docker-Volumes erhalten.
+
+Die Integrationstests laufen im Dolibarr-Container und sind auf die lokale Entwicklungsinstanz beschränkt:
+
+```sh
+docker compose -f .devcontainer/compose.yml exec -T dolibarr php /var/www/html/custom/bankimport/tests/BankImportDolibarrIntegration.php
+docker compose -f .devcontainer/compose.yml exec -T dolibarr php /var/www/html/custom/bankimport/tests/BankImportHttpTest.php
+```
+
+Der HTTP-Test prüft Anmeldung, Upload, Auswahl, bewusstes Importieren von Duplikaten, CSRF und erneutes Absenden mit synthetischen Daten, die anschließend entfernt werden. Die Tests sind ausschließlich per CLI ausführbar und fehlen im Installations-ZIP.
+
+Das Installationspaket lässt sich mit `php build/package.php 0.1.0` erstellen (PHP-Erweiterung `zip` erforderlich).
 
 ## CSV Format
 
-### Supported Format
+### Unterstützte Formate
 
-* Die Import-Datei ist eine CSV-Datei. Die erste Zeile wird als Header übersprungen.
-* Feldtrennzeichen ist ein Semikolon ';'.
-* Zeilentrennzeichen ist Zeilenumbruch '\n'.
-* String-Werte können in Anführungszeichen gesetzt werden.
-* Unterstützte Kodierungen: ISO-8859-1, UTF-8
+* **Haspa/camt.052 v8:** bestehendes CSV-Format mit Haspa-Kopfzeilen wie `Buchungstag`, `Verwendungszweck` und `Betrag`.
+* **N26 (englisch):** CSV-Kontoaktivitätsbericht mit `Booking Date`, `Value Date`, `Partner Name`, `Partner Iban`, `Type`, `Payment Reference` und `Amount (EUR)`.
+* `Category`, `Account Name`, `Original Amount`, `Original Currency` und `Exchange Rate` sind bei N26 optional.
+* Die Kopfzeile bestimmt das Format; Reihenfolge der Spalten und Separator (`,` oder `;`) werden automatisch erkannt. Quoted CSV-Felder sind unterstützt.
+* N26-Daten unterstützen `YYYY-MM-DD`; Haspa weiterhin `DD.MM.YY` und `DD.MM.YYYY`.
+* Unterstützte Kodierungen: ISO-8859-1, UTF-8.
+
+Für N26 wird das Dolibarr-Label aus `Payment Reference`, andernfalls `Type` und zuletzt dem Partnernamen gebildet. Die Duplikaterkennung ist auf das ausgewählte Dolibarr-Bankkonto beschränkt. N26- und neue Haspa-Import-Keys enthalten das Buchungsdatum; historische Haspa-Keys werden weiterhin erkannt. Exakte Duplikate und ähnliche Buchungen werden in der Vorschau markiert, bleiben aber bewusst auswählbar.
+
+Wiederholte Zeilen innerhalb derselben CSV werden ebenfalls markiert. Zeilen mit Warnungen sind zunächst abgewählt; andere Zeilen sind vorausgewählt. Die Vorschau läuft nach einer Stunde ab. Pro Datei gelten 10 MB und höchstens 5.000 Buchungen; bei niedrigem PHP-Formularlimit (`max_input_vars`) wird das Zeilenlimit entsprechend reduziert. Fremdwährungen, geschlossene Konten und Kassenkonten sind für diesen Import nicht vorgesehen.
 
 ### Field Mapping
 
-Nicht alle Felder werden importiert. Das statische Mapping zu Dolibarr-Feldern:
+Nicht alle Haspa-Felder werden importiert. Das Mapping zu Dolibarr-Feldern:
 
 | CSV Field | Dolibarr Field | Description |
 |-----------|----------------|-------------|
 | 1 | dateo | Buchungstag |
 | 2 | datev | Valutadatum |
 | 4 | label | Verwendungszweck |
-| 5 | creditor_id | Gläubiger-ID (in notes) |
-| 6 | ref | Mandatsreferenz |
-| 8 | collector_ref | Sammlerreferenz (in notes) |
-| 11 | owner_other | Begünstigter/Zahlungspflichtiger |
-| 12 | iban_other | Kontonummer/IBAN (Gegenpartei) |
-| 13 | bank_other | BIC (Gegenpartei) |
+| 5 | note | Gläubiger-ID |
+| 6 | note | Mandatsreferenz |
+| 8 | note | Sammlerreferenz |
+| 11 | emetteur | Begünstigter/Zahlungspflichtiger |
+| 12 | note | Kontonummer/IBAN (Gegenpartei) |
+| 13 | banque, note | BIC (Gegenpartei) |
 | 14 | amount | Betrag |
-| 15 | currency | Währung |
+| 15 | Kontowährung | Wird gegen die Währung des gewählten Kontos geprüft |
+
+### N26-Mapping
+
+| N26-Feld | Internes Transaktionsfeld | Dolibarr-Verwendung |
+|---|---|---|
+| `Booking Date` | `booking_date` | Buchungstag |
+| `Value Date` | `value_date` | Valutadatum (leer → Buchungstag) |
+| `Partner Name`, `Partner Iban` | Gegenpartei | Name und IBAN |
+| `Type`, `Payment Reference` | Buchungstext/Verwendungszweck | Label und Referenz |
+| `Amount (EUR)` | `amount` | Betrag, Währung ist immer EUR |
 
 ## 📑 Record Description – Haspa CSV (camt.052 v8 Export)
 
@@ -120,11 +160,9 @@ Bei Fragen oder Problemen:
 
 Siehe [ChangeLog.md](ChangeLog.md) für detaillierte Änderungen.
 
-### Version 0.0.10
-- Erste Veröffentlichung
-- Unterstützung für camt.052 v8 Format
-- UTF-8 und ISO-8859-1 Kodierung
-- Duplikat-Erkennung
-- Verbesserte Fehlerbehandlung
-- Mehrsprachige Unterstützung (Deutsch/Englisch)
-- Sichere Implementierung mit Validierung
+### Version 0.1.0
+- Importvorschau mit Einzelauswahl
+- Kontoabhängige Duplikat- und Ähnlichkeitshinweise
+- Atomarer Import von Buchung und Import-Key
+- Aktuelle englische N26-CSV sowie Haspa/camt.052 v8
+- Dolibarr 24 und PHP 7.4+

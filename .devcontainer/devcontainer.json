@@ -1,0 +1,17 @@
+{
+  "name": "bankimport (PHP 8.2, Dolibarr 24)",
+  "dockerComposeFile": "compose.yml",
+  "service": "workspace",
+  "runServices": ["workspace", "mariadb", "dolibarr"],
+  "workspaceFolder": "/workspaces/bankimport",
+  "overrideCommand": false,
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "xdebug.php-debug",
+        "bmewburn.vscode-intelephense-client"
+      ]
+    }
+  }
+}

@@ -1,0 +1,3 @@
+Auftragskonto;Buchungstag;Valutadatum;Buchungstext;Verwendungszweck;Glaeubiger ID;Mandatsreferenz;Kundenreferenz (End-to-End);Sammlerreferenz;Lastschrift Ursprungsbetrag;Auslagenersatz Ruecklastschrift;Beguenstigter/Zahlungspflichtiger;Kontonummer/IBAN;BIC (SWIFT-Code);Betrag;Waehrung;Info
+DE001;04.08.25;04.08.25;LASTSCHRIFT;Monatsbeitrag;;;;;;;Beispielverein;DE002;HASPDEHHXXX;-25,00;EUR;Umsatz gebucht
+DE001;04.09.25;04.09.25;LASTSCHRIFT;Monatsbeitrag;;;;;;;Beispielverein;DE002;HASPDEHHXXX;-25,00;EUR;Umsatz gebucht

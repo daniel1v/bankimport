@@ -1,0 +1,4 @@
+Booking Date,Value Date,Partner Name,Partner Iban,Type,Payment Reference,Category,Account Name,Amount (EUR),Original Amount,Original Currency,Exchange Rate
+2026-09-02,,Coffee Shop,DE11111111111111111111,CARD_PAYMENT,"Coffee, breakfast",Food,Main Account,-3.50,,,
+2026-09-03,2026-09-03,Coffee Shop,DE11111111111111111111,CARD_PAYMENT,"Coffee, breakfast",Food,Main Account,-3.50,,,
+2026-09-04,2026-09-04,Example Employer,DE22222222222222222222,TRANSFER,September salary,Income,Main Account,1200.00,,,

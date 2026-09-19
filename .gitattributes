@@ -1,0 +1,2 @@
+# Keep WSL/devcontainer shell scripts executable after a Windows checkout.
+*.sh text eol=lf

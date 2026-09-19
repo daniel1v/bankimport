@@ -1,24 +1,24 @@
 # BankImport Modul - Berechtigungen konfigurieren
 
-## Problem: "Zugriff verweigert" beim Klick auf "Kontoauszüge importieren"
+## Zugriff auf den Bankimport
 
-Wenn Sie die Meldung "Zugriff verweigert" erhalten, müssen die Berechtigungen für das BankImport-Modul konfiguriert werden.
+Der Bankimport verwendet dieselbe Berechtigung wie das Bearbeiten von
+Bankkonten in Dolibarr: **Banken und Kassen ändern** (`banque->modifier`).
 
 ## Lösung: Berechtigungen einrichten
 
-### Schritt 1: Modul neu aktivieren
+### Schritt 1: Modul aktivieren
 
 1. Gehen Sie zu **Setup** → **Module/Applications**
 2. Suchen Sie nach "BankImport"
-3. **Deaktivieren** Sie das Modul (falls aktiviert)
-4. **Aktivieren** Sie das Modul erneut
+3. Aktivieren Sie das Modul **BankImport**.
 
 ### Schritt 2: Berechtigungen konfigurieren
 
 1. Gehen Sie zu **Setup** → **Users & Groups** → **Permissions**
 2. Wählen Sie die gewünschte Benutzergruppe aus (z.B. "Users" oder "Administrators")
-3. Scrollen Sie zum Abschnitt **BankImport**
-4. Aktivieren Sie die Berechtigung **"Bankauszüge importieren"**
+3. Scrollen Sie zum Abschnitt **Banken und Kassen**
+4. Aktivieren Sie die Berechtigung zum Ändern von Bankkonten
 5. Klicken Sie auf **Speichern**
 
 ### Schritt 3: Benutzer-Berechtigungen prüfen
@@ -26,31 +26,7 @@ Wenn Sie die Meldung "Zugriff verweigert" erhalten, müssen die Berechtigungen f
 1. Gehen Sie zu **Setup** → **Users & Groups** → **Users**
 2. Wählen Sie den gewünschten Benutzer aus
 3. Gehen Sie zum Tab **Permissions**
-4. Stellen Sie sicher, dass die BankImport-Berechtigungen aktiviert sind
-
-## Alternative: Temporäre Lösung
-
-Falls die Berechtigungen nicht funktionieren, können Sie temporär die Berechtigungsprüfung deaktivieren:
-
-### In der Datei `custom/bankimport/import.php`:
-
-Ändern Sie Zeile 23-25 von:
-```php
-// Security check - check for bankimport rights
-if (!$user->rights->bankimport->import) {
-    accessforbidden();
-}
-```
-
-zu:
-```php
-// Security check - temporarily disabled for testing
-// if (!$user->rights->bankimport->import) {
-//     accessforbidden();
-// }
-```
-
-**⚠️ Wichtig**: Diese Änderung sollte nur für Tests verwendet werden und muss vor dem produktiven Einsatz wieder rückgängig gemacht werden!
+4. Stellen Sie sicher, dass die Berechtigung zum Ändern unter Banken und Kassen aktiviert ist
 
 ## Überprüfung der Installation
 

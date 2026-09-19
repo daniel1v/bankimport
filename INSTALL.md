@@ -2,12 +2,12 @@
 
 ## Übersicht
 
-Das BankImport-Modul ermöglicht den Import von Bankauszügen im CSV-Format (camt.052 v8) in Dolibarr. Das Modul unterstützt verschiedene Kodierungen und verhindert Duplikate durch Import-Schlüssel.
+Das BankImport-Modul importiert Haspa/camt.052-v8- und englische N26-CSV-Dateien in Dolibarr. Eine Vorschau zeigt Duplikate und Ähnlichkeiten; der Benutzer wählt die zu importierenden Buchungen selbst aus.
 
 ## Systemanforderungen
 
 - **PHP**: 7.4 oder höher
-- **Dolibarr**: 21.0.0 oder höher
+- **Dolibarr**: 24.x
 - **Aktiviertes Bank-Modul** in Dolibarr
 
 ## Installation
@@ -50,11 +50,7 @@ oder:
 
 ### CSV-Datei vorbereiten
 
-Die CSV-Datei muss folgendes Format haben:
-- **Trennzeichen**: Semikolon (;)
-- **Kodierung**: UTF-8 oder ISO-8859-1
-- **Erste Zeile**: Header (wird übersprungen)
-- **Format**: camt.052 v8
+Unterstützt werden Haspa/camt.052-v8-CSV und aktuelle englische N26-CSV. Komma oder Semikolon sowie das Format werden anhand der Kopfzeile erkannt. Quoted CSV-Felder werden unterstützt.
 
 ### Import durchführen
 
@@ -62,23 +58,25 @@ Die CSV-Datei muss folgendes Format haben:
 2. Wählen Sie das Bankkonto aus
 3. Wählen Sie die CSV-Datei aus
 4. Wählen Sie die Kodierung (UTF-8 oder ISO-8859-1)
-5. Klicken Sie auf **Importieren**
+5. Klicken Sie auf **Vorschau erstellen**
+6. Prüfen Sie Duplikat- und Ähnlichkeitshinweise, wählen Sie die gewünschten Buchungen und klicken Sie auf **Ausgewählte Buchungen importieren**
 
 ### Import-Ergebnisse
 
 Das Modul zeigt folgende Informationen an:
 - **Erfolgreich importiert**: Anzahl der neuen Transaktionen
-- **Übersprungen**: Anzahl der bereits importierten Transaktionen
+- **Duplikat/Ähnlichkeit**: Hinweis in der Vorschau; die Entscheidung bleibt beim Benutzer
 - **Fehler**: Detaillierte Fehlermeldungen für problematische Zeilen
 
 ## Konfiguration
 
-### Erweiterte Einstellungen
+### Grenzen und Verhalten
 
-Das Modul unterstützt folgende Konfigurationen:
+Das Modul verwendet folgende Grenzen:
 - **Maximale Dateigröße**: 10 MB (standardmäßig)
 - **Unterstützte Kodierungen**: UTF-8, ISO-8859-1
-- **Duplikat-Erkennung**: Automatisch durch Import-Schlüssel
+- **Vorschau**: bis zu 5.000 Buchungen, bei niedrigem `max_input_vars` entsprechend weniger; Laufzeit eine Stunde
+- **Duplikat-Erkennung**: Kontoabhängig durch Import-Schlüssel; ähnliche Beträge, Daten und Beschreibungen werden zusätzlich markiert
 
 ### CSV-Feld-Mapping
 
@@ -106,9 +104,9 @@ Das Modul verwendet folgendes Feld-Mapping für camt.052 v8:
    - Überprüfen Sie die Dateiberechtigungen
    - Stellen Sie sicher, dass die Datei nicht beschädigt ist
 
-2. **"Insufficient columns in CSV"**
-   - Überprüfen Sie das CSV-Format
-   - Stellen Sie sicher, dass Semikolon als Trennzeichen verwendet wird
+2. **"Missing required column" / "Unsupported CSV format"**
+   - Prüfen Sie, ob die Datei die Original-Kopfzeile des unterstützten Haspa- oder N26-Exports enthält
+   - Komma und Semikolon werden automatisch erkannt
 
 3. **"Invalid file type"**
    - Verwenden Sie nur CSV-Dateien

@@ -8,27 +8,18 @@
   "dirs": [
     "/bankimport"
   ],
-  "depends": [],
+  "depends": [
+    "modBanque"
+  ],
   "requiredby": [],
   "conflictwith": [],
   "langfiles": [
     "bankimport@bankimport"
   ],
   "phpmin": "7.4",
-  "dolibarr_min": "16.0.0",
-  "dolibarr_max": "24.0.0",
-  "rights": [
-    {
-      "id": 104001,
-      "desc": "Bankauszüge importieren",
-      "default": "1",
-      "perm": {
-        "read": "1",
-        "write": "1",
-        "delete": "0"
-      }
-    }
-  ],
+  "dolibarr_min": "24.0.0",
+  "dolibarr_max": "24.99.99",
+  "rights": [],
   "menus": [
     {
       "id": "bankimport_menu",
@@ -39,7 +30,7 @@
       "langs": "bankimport@bankimport",
       "position": 100,
       "enabled": "1",
-      "perms": "1",
+      "perms": "$user->hasRight(\"banque\", \"modifier\")",
       "target": "",
       "user": 0
     }

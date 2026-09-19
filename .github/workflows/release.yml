@@ -24,31 +24,26 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+          extensions: zip
 
-      # 3. Composer install
-      - name: Install dependencies
-        run: composer install --no-dev --optimize-autoloader
-
-      # 4. Generate module_descriptor.json und .env
-      - name: Generate config files
+      # 3. Validate the module before packaging
+      - name: PHP syntax and CSV regression tests
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          sed "s/{{VERSION}}/$TAG/g" build/module_descriptor.json > module_descriptor.json
-          echo "VERSION=$TAG" > .env
+          php -l import.php
+          php -l core/class/BankImport.class.php
+          php -l core/modules/modBankImport.class.php
+          php -l core/modules/BankImportHelper.php
+          php tests/BankImportCsvTest.php
 
-      # 5. Pack alles in ZIP
-      - name: Create zip
-        run: |
-          TAG=${GITHUB_REF##*/}
-          mkdir -p dist/bankimport
-          rsync -av --exclude 'dist' --exclude '.git' --exclude '.github' ./ dist/bankimport/
-          cd dist
-          zip -r ../module_bankimport-$TAG.zip bankimport
+      - name: Create installable ZIP
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: php build/package.php "$RELEASE_VERSION"
 
       # 6. Release mit ZIP
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: module_bankimport-*.zip
+          files: dist/module_bankimport-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

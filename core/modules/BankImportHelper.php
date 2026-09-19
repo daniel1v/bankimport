@@ -1,24 +1,30 @@
 <?php
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-use Dotenv\Dotenv;
-
 class BankImportHelper
 {
     private static $envLoaded = false;
+
+    private static $env = array();
 
     public static function loadEnv()
     {
         if (self::$envLoaded) return;
 
-        $dotenv = Dotenv::createImmutable(__DIR__ . '/../..'); // Modulstamm
-        $dotenv->safeLoad(); // lädt nur, existiert sie nicht, kein Fehler
+        $envFile = __DIR__ . '/../../.env';
+        if (is_readable($envFile)) {
+            $values = parse_ini_file($envFile, false, INI_SCANNER_RAW);
+            if (is_array($values)) self::$env = $values;
+        }
         self::$envLoaded = true;
     }
 
     public static function getEnv($key, $default = null)
     {
         self::loadEnv();
-        return $_ENV[$key] ?? getenv($key) ?? $default;
+        if (array_key_exists($key, self::$env)) return self::$env[$key];
+        if (array_key_exists($key, $_ENV)) return $_ENV[$key];
+
+        $value = getenv($key);
+        return $value === false ? $default : $value;
     }
 }
